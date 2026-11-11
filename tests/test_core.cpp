@@ -51,3 +51,10 @@ TEST_CASE("arithmetic rejects dimension mismatches", "[core]") {
     CHECK_THROWS_AS(A * A, std::invalid_argument);
     CHECK_THROWS_AS(A.trace(), std::invalid_argument);  // non-square
 }
+
+TEST_CASE("blocked matmul matches operator*", "[matmul][blocked]") {
+    Matrix<double> A = {{1, 2, 3}, {4, 5, 6}};
+    Matrix<double> B = {{7, 8}, {9, 10}, {11, 12}};
+    REQUIRE(matmul_blocked(A, B, 2).isApprox(A * B));
+    REQUIRE(matmul_blocked(A, B, 64).isApprox(A * B));
+}
