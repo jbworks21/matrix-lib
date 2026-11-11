@@ -38,28 +38,6 @@ Matrix<T> matmul_ikj(const Matrix<T>& A, const Matrix<T>& B) {
     return C;
 }
 
-// (3) Blocked i-k-j: partition all three loops into tiles so that the working
-// set of each tile fits inside L1/L2 cache.
-template <typename T>
-Matrix<T> matmul_blocked(const Matrix<T>& A, const Matrix<T>& B, size_t BS) {
-    const size_t m = A.rows(), k = A.cols(), n = B.cols();
-    Matrix<T> C(m, n, T{});
-    for (size_t i0 = 0; i0 < m; i0 += BS)
-        for (size_t k0 = 0; k0 < k; k0 += BS)
-            for (size_t j0 = 0; j0 < n; j0 += BS) {
-                const size_t i_end = std::min(i0 + BS, m);
-                const size_t k_end = std::min(k0 + BS, k);
-                const size_t j_end = std::min(j0 + BS, n);
-                for (size_t i = i0; i < i_end; ++i)
-                    for (size_t kk = k0; kk < k_end; ++kk) {
-                        const T a = A(i, kk);
-                        for (size_t j = j0; j < j_end; ++j)
-                            C(i, j) += a * B(kk, j);
-                    }
-            }
-    return C;
-}
-
 // (4) Parallel i-k-j: partition the rows of C across threads.
 template <typename T>
 Matrix<T> matmul_parallel(const Matrix<T>& A, const Matrix<T>& B, unsigned nthreads) {
